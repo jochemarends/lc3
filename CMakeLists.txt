@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(lc3 LANGUAGES CXX)
 
-add_executable(lc3 ./src/main.cpp)
+add_executable(lc3)
 
 target_sources(lc3 PRIVATE ./src/cpu.cpp)
 
