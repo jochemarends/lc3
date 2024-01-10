@@ -2,15 +2,17 @@
 #define CPU_H
 
 #include <cstdint>
+#include <vector>
 #include <algorithm>
+#include <iterator>
 #include <ranges>
 
 namespace lc3 {
     class cpu {
     public:
-        void load(const std::input_range auto& bin) {
+        void load(const std::ranges::input_range auto& bin) {
             m_program.clear();
-            std::ranges::copy(bin, std::back_insterter(m_program));
+            std::ranges::copy(bin, std::back_inserter(m_program));
         }
 
         void execute(std::uint16_t bin);
