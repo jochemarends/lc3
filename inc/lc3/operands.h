@@ -6,8 +6,18 @@
 namespace lc3 {
     template<typename T>
     concept operand = requires {
-        T::width -> std::same_as<std::size_t>;
-    }
+        {T::width} -> std::same_as<std::size_t>;
+    };
+
+    template<typename T>
+    concept constant = operand<T> && requires {
+        T::value;
+    };
+
+    template<operand... Operands> 
+    struct encoding {
+        
+    };
 
     struct imm5 {
         static constexpr std::size_t width{5};
