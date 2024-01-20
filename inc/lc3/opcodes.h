@@ -3,11 +3,11 @@
 
 namespace lc3 {
     enum class opcode {
-        ADD  = 0b0001,
-        AND  = 0b0101,
-        BR   = 0b0000,
-        JMP  = 0b1100,
-        JSR  = 0b0100,
+        ADD  = 0b0001, // done
+        AND  = 0b0101, // done
+        BR   = 0b0000, // done
+        JMP  = 0b1100, // done
+        JSR  = 0b0100, // done
         LD   = 0b0010,
         LDI  = 0b1010,
         LDR  = 0b0110,

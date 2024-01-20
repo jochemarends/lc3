@@ -29,7 +29,7 @@ namespace lc3 {
             unsigned int n : 1;
             unsigned int z : 1;
             unsigned int p : 1;
-        } m_condition{};
+        } m_condition{0, 1, 0};
     };
 }
 
