@@ -13,7 +13,6 @@ namespace lc3 {
         LDR  = 0b0110,
         LEA  = 0b1110,
         NOT  = 0b1001,
-        RET  = 0b1100,
         RTI  = 0b1000,
         ST   = 0b0011,
         STI  = 0b1011,
