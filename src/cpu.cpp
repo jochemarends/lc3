@@ -75,6 +75,17 @@ namespace lc3 {
             }
             break;
         }
+        case opcode::BR:
+            execute<opcode::BR>(bin);
+        case opcode::LD:
+            execute<opcode::LD>(bin);
+            break;
+        case opcode::LDI:
+            execute<opcode::LDI>(bin);
+            break;
+        case opcode::JSR:
+            execute<opcode::LDI>(bin);
+        }
         default:
             throw std::runtime_error{"ERROR: invalid opcode"};
         }
