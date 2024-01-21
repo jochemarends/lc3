@@ -59,6 +59,12 @@ namespace lc3 {
             throw std::runtime_error{"ERROR: invalid opcode"};
         }
     }
+
+    void cpu::setcc(std::int16_t value) {
+        m_condition.n = (value > 0);
+        m_condition.z = (value == 0);
+        m_condition.p = (value < 0);
+    }
 }
 
 int main() {

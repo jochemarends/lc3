@@ -10,21 +10,8 @@
 #include <lc3/types.h>
 #include <lc3/opcodes.h>
 #include <lc3/extend.h>
+#include <lc3/encoding.h>
 
-template<lc3::type T>
-std::uint16_t extract(std::uint16_t bin) {
-    return bin >> T::index;
-}
-
-template<lc3::type... Ts>
-auto decode(std::uint16_t bin) {
-    return std::array<std::uint16_t, sizeof... (Ts)>{(static_cast<std::uint16_t>(bin >> Ts::index))...};
-}
-
-template<std::size_t N>
-auto bit_at(std::integral auto bin) {
-    return bin >> N & 1;
-}
 
 namespace lc3 {
     class cpu {
@@ -41,18 +28,15 @@ namespace lc3 {
         template<opcode Opcode>
         void perform(std::uint16_t bin);
 
+        void setcc(std::int16_t value);
+
         std::vector<std::uint16_t> m_program{};
 
         std::uint16_t m_pc{};
 
         std::int16_t m_regs[8]{};
-        std::int16_t m_memory[100]{};
 
-        void setcc(std::int16_t value) {
-            m_condition.n = (value < 0);
-            m_condition.z = (value == 0);
-            m_condition.p = (value > 0);
-        }
+        std::int16_t m_memory[100]{};
 
         struct {
             unsigned int n : 1;
