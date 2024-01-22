@@ -74,7 +74,7 @@ namespace lc3 {
 }
 
 int main() {
-    std::uint16_t program[]{
+    [[maybe_unused]] std::uint16_t program[]{
         0xE002,
         0xF022,
         0xF025,
@@ -82,8 +82,30 @@ int main() {
         0x0000
     };
 
+    [[maybe_unused]] std::uint16_t prog[]{
+        0x200A,
+        0x260B,
+        0x2409,
+        0x1E20,
+        0xE009,
+        0xF022,
+        0x11E0,
+        0x16C0,
+        0x14BF,
+        0x0BF9,
+        0xF025,
+        0x0003,
+        0x000A,
+        0x0000,
+        0x0068,
+        0x006F,
+        0x0069,
+        0x0000,
+        0x0000,
+    };
+
     lc3::cpu cpu{};
-    cpu.load(program);
+    cpu.load_from_obj_file("./wheel");
     cpu.run();
 }
 

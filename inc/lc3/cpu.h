@@ -12,15 +12,30 @@
 #include <lc3/opcodes.h>
 #include <lc3/extend.h>
 #include <lc3/encoding.h>
+#include <fstream>
 
 
 namespace lc3 {
     class cpu {
     public:
         void load(const std::ranges::input_range auto& bin) {
-            //m_program.clear();
-            // std::ranges::copy(bin, std::back_inserter(m_program));
-            std::ranges::copy(bin, m_memory);
+            std::ranges::copy(bin, m_memory + 0x3000);
+        }
+
+        void load_from_obj_file(const std::string& file_name) {
+            std::ifstream ifs{file_name, std::ios::binary};
+            ifs.good();
+
+            std::uint16_t n{};
+            auto idx = 0x3000;
+            while (ifs.read(reinterpret_cast<char*>(&n), sizeof n)) {
+               auto temp = n >> 8 & 0xFF;
+               n = n << 8;
+               n = n & 0xFF00;
+               n = n | temp;
+               //std::cout << std::hex << n << '\n';
+               m_memory[idx++] = n;
+            }
         }
 
         void execute(std::uint16_t bin);
@@ -51,13 +66,18 @@ namespace lc3 {
 
     template<>
     void cpu::perform<opcode::ADD>(std::uint16_t bin) {
-        if (bit_at<5>(bin)) {
+        if (bit_at<5>(bin) == 0) {
             auto [a, b, c] = decode<DR, SR1, SR2>(bin);
             m_regs[a] = m_regs[b] + m_regs[c];
+            setcc(m_regs[a]);
         }
         else {
             auto [a, b, c] = decode<DR, SR1, imm5>(bin);
             m_regs[a] = m_regs[b] + sign_extend<imm5>(c);
+            //std::cout << "ADD: " << a << ", " << b << ", " << sign_extend<imm5>(c) << '\n';
+            //char ch{};
+            //std::cin >> ch;
+            setcc(m_regs[a]);
         }
     }
 
@@ -182,10 +202,17 @@ namespace lc3 {
             return;
         }
 
-        std::uint16_t idx = m_regs[0];
-        while (m_memory[idx] != 0x0000) {
-            std::cout << static_cast<unsigned char>(m_memory[idx]);
-            ++idx;
+        if (offset == 0x22) {
+            std::uint16_t idx = m_regs[0];
+            while (m_memory[idx] != 0x0000) {
+                std::cout << static_cast<unsigned char>(m_memory[idx]);
+                ++idx;
+            }
+            return;
+        }
+
+        if (offset == 0x20) {
+            m_regs[0] = 'a';
         }
     }
 }
