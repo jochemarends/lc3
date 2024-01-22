@@ -22,22 +22,6 @@ namespace lc3 {
             std::ranges::copy(bin, m_memory + origin);
         }
 
-        void load_from_obj_file(const std::string& file_name) {
-            std::ifstream ifs{file_name, std::ios::binary};
-            ifs.good();
-
-            std::uint16_t n{};
-            auto idx = 0x3000;
-            while (ifs.read(reinterpret_cast<char*>(&n), sizeof n)) {
-               auto temp = n >> 8 & 0xFF;
-               n = n << 8;
-               n = n & 0xFF00;
-               n = n | temp;
-               //std::cout << std::hex << n << '\n';
-               m_memory[idx++] = n;
-            }
-        }
-
         void execute(std::uint16_t bin);
 
         void run();
@@ -47,9 +31,7 @@ namespace lc3 {
 
         void setcc(std::int16_t value);
 
-        std::vector<std::uint16_t> m_program{};
-
-        std::uint16_t m_pc{};
+        std::uint16_t m_pc{0x3000};
 
         std::int16_t m_regs[8]{};
 

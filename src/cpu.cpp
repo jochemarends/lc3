@@ -7,8 +7,9 @@
 
 namespace lc3 {
     void cpu::run() {
-        while(!m_halted) {
-            execute(m_memory[m_pc++]);
+        while (!m_halted) {
+            std::uint16_t var = m_memory[m_pc++];
+            execute(var);
         }
     }
 
@@ -35,11 +36,14 @@ namespace lc3 {
         if (bit_at<5>(bin)) {
             auto [a, b, c] = decode<DR, SR1, SR2>(bin);
             m_regs[a] = m_regs[b] & m_regs[c];
+            setcc(m_regs[a]);
         }
         else {
             auto [a, b, c] = decode<DR, SR1, imm5>(bin);
             m_regs[a] = m_regs[b] & sign_extend<imm5>(c);
+            setcc(m_regs[a]);
         }
+
     }
 
     template<>
@@ -89,14 +93,14 @@ namespace lc3 {
     template<>
     void cpu::perform<opcode::LDI>(std::uint16_t bin) {
         auto [idx, offset] = decode<DR, PCoffset9>(bin);
-        m_regs[idx] = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
+        m_regs[idx] = m_memory[m_memory[m_pc + sign_extend<PCoffset9>(offset)]];
         setcc(m_regs[idx]);
     }
 
     template<>
     void cpu::perform<opcode::LDR>(std::uint16_t bin) {
         auto [a, b, offset] = decode<DR, BaseR, offset6>(bin);
-        m_regs[a] = m_memory[b + sign_extend<offset6>(offset)];
+        m_regs[a] = m_memory[m_regs[b] + sign_extend<offset6>(offset)];
         setcc(m_regs[a]);
     }
 
@@ -127,15 +131,14 @@ namespace lc3 {
 
     template<>
     void cpu::perform<opcode::STI>(std::uint16_t bin) {
-        auto [a, offset] = decode<SR, PCoffset9>(bin);
-        auto b = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
-        m_memory[b] = m_regs[a];
+        auto [idx, offset] = decode<SR, PCoffset9>(bin);
+        m_memory[m_memory[m_pc + sign_extend<PCoffset9>(offset)]] = m_regs[idx];
     }
 
     template<>
     void cpu::perform<opcode::STR>(std::uint16_t bin) {
         auto [a, b, offset] = decode<SR, BaseR, offset6>(bin);
-        m_memory[b + sign_extend<offset6>(offset)] = m_regs[a];
+        m_memory[m_regs[b] + sign_extend<offset6>(offset)] = m_regs[a];
     }
 
     template<>
@@ -166,6 +169,8 @@ namespace lc3 {
     }
     void cpu::execute(std::uint16_t bin) {
         auto op = static_cast<opcode>(bin >> 12);
+        //std::cout << (bin >> 12) << " -> " <<  (bin & 0x0FFF) << '\n';
+        //std::cin.get();
 
         switch (op) {
         case opcode::ADD:
@@ -219,9 +224,9 @@ namespace lc3 {
     }
 
     void cpu::setcc(std::int16_t value) {
-        m_condition.n = (value > 0);
+        m_condition.n = (value < 0);
         m_condition.z = (value == 0);
-        m_condition.p = (value < 0);
+        m_condition.p = (value > 0);
     }
 
 }

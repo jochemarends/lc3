@@ -8,7 +8,7 @@ namespace lc3 {
 int main() {
     lc3::cpu cpu{};
 
-    std::ifstream ifs{"./program", std::ios::binary};
+    std::ifstream ifs{"./reverse_string", std::ios::binary};
 
     auto read = [&ifs]() {
         lc3::word word{};

@@ -12,6 +12,8 @@ target_compile_features(lc3 PRIVATE cxx_std_20)
 
 target_compile_options(lc3 PRIVATE -Werror -Wall -Wextra -pedantic)
 
+target_compile_options(lc3 PUBLIC -g -O0 -fno-omit-frame-pointer)
+
 add_executable(demo ./src/main.cpp)
 
 target_compile_features(demo PRIVATE cxx_std_23)
