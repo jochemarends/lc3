@@ -164,8 +164,18 @@ namespace lc3 {
         }
 
         if (offset == 0x20) {
-            m_regs[0] = 'a';
+            m_regs[0] = std::cin.get();
         }
+
+        if (offset == 0x23) {
+            std::cout << "enter a character\n";
+            m_regs[0] = std::cin.get();
+        }
+
+        if (offset == 0x21) {
+            std::cout << static_cast<char>(m_regs[0]);
+        }
+
     }
     void cpu::execute(std::uint16_t bin) {
         auto op = static_cast<opcode>(bin >> 12);

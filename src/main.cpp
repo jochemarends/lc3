@@ -1,14 +1,10 @@
 #include <lc3/cpu.h>
 #include <bit>
 
-namespace lc3 {
-    using word = std::uint16_t;
-}
-
 int main() {
     lc3::cpu cpu{};
 
-    std::ifstream ifs{"./reverse_string", std::ios::binary};
+    std::ifstream ifs{"./helloworld", std::ios::binary};
 
     auto read = [&ifs]() {
         lc3::word word{};

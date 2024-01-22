@@ -12,14 +12,20 @@
 #include <lc3/opcodes.h>
 #include <lc3/extend.h>
 #include <lc3/encoding.h>
+#include <lc3/memory.h>
 #include <fstream>
 
+
+namespace lc3 {
+    using word = std::uint16_t;
+    using sword = std::int16_t;
+}
 
 namespace lc3 {
     class cpu {
     public:
         void load(const std::ranges::input_range auto& bin, std::uint16_t origin = 0x0000) {
-            std::ranges::copy(bin, m_memory + origin);
+            std::ranges::copy(bin, m_memory.data() + origin);
         }
 
         void execute(std::uint16_t bin);
@@ -35,7 +41,7 @@ namespace lc3 {
 
         std::int16_t m_regs[8]{};
 
-        std::int16_t m_memory[0xFFFF]{};
+        memory m_memory{};
 
         bool m_halted{};
 
@@ -45,7 +51,6 @@ namespace lc3 {
             unsigned int p : 1;
         } m_condition{0, 1, 0};
     };
-
 }
 
 #endif
