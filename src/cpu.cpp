@@ -12,6 +12,158 @@ namespace lc3 {
         }
     }
 
+
+    template<>
+    void cpu::perform<opcode::ADD>(std::uint16_t bin) {
+        if (bit_at<5>(bin) == 0) {
+            auto [a, b, c] = decode<DR, SR1, SR2>(bin);
+            m_regs[a] = m_regs[b] + m_regs[c];
+            setcc(m_regs[a]);
+        }
+        else {
+            auto [a, b, c] = decode<DR, SR1, imm5>(bin);
+            m_regs[a] = m_regs[b] + sign_extend<imm5>(c);
+            //std::cout << "ADD: " << a << ", " << b << ", " << sign_extend<imm5>(c) << '\n';
+            //char ch{};
+            //std::cin >> ch;
+            setcc(m_regs[a]);
+        }
+    }
+
+    template<>
+    void cpu::perform<opcode::AND>(std::uint16_t bin) {
+        if (bit_at<5>(bin)) {
+            auto [a, b, c] = decode<DR, SR1, SR2>(bin);
+            m_regs[a] = m_regs[b] & m_regs[c];
+        }
+        else {
+            auto [a, b, c] = decode<DR, SR1, imm5>(bin);
+            m_regs[a] = m_regs[b] & sign_extend<imm5>(c);
+        }
+    }
+
+    template<>
+    void cpu::perform<opcode::BR>(std::uint16_t bin) {
+        auto [offset] = decode<PCoffset9>(bin);
+
+        if (bit_at<11>(bin) && m_condition.n) {
+            m_pc += sign_extend<PCoffset9>(offset);
+        }
+
+        if (bit_at<10>(bin) && m_condition.z) {
+            m_pc += sign_extend<PCoffset9>(offset);
+        }
+
+        if (bit_at<9>(bin) && m_condition.p) {
+            m_pc += sign_extend<PCoffset9>(offset);
+        }
+    }
+
+    template<>
+    void cpu::perform<opcode::JMP>(std::uint16_t bin) { 
+        auto [idx] = decode<BaseR>(bin);
+        m_pc = m_regs[idx];
+    }
+
+    template<>
+    void cpu::perform<opcode::JSR>(std::uint16_t bin) {
+        m_regs[7] = m_pc;
+
+        if (bit_at<11>(bin) == 0) {
+            auto [idx] = decode<BaseR>(bin);
+            m_pc = m_regs[idx];
+        }
+        else {
+            auto [offset] = decode<PCoffset11>(bin);
+            m_pc += sign_extend<PCoffset11>(offset);
+        }
+    }
+
+    template<>
+    void cpu::perform<opcode::LD>(std::uint16_t bin) {
+        auto [idx, offset] = decode<DR, PCoffset9>(bin);
+        m_regs[idx] = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
+        setcc(m_regs[idx]);
+    }
+
+    template<>
+    void cpu::perform<opcode::LDI>(std::uint16_t bin) {
+        auto [idx, offset] = decode<DR, PCoffset9>(bin);
+        m_regs[idx] = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
+        setcc(m_regs[idx]);
+    }
+
+    template<>
+    void cpu::perform<opcode::LDR>(std::uint16_t bin) {
+        auto [a, b, offset] = decode<DR, BaseR, offset6>(bin);
+        m_regs[a] = m_memory[b + sign_extend<offset6>(offset)];
+        setcc(m_regs[a]);
+    }
+
+    template<>
+    void cpu::perform<opcode::LEA>(std::uint16_t bin) {
+        auto [idx, offset] = decode<DR, PCoffset9>(bin);
+        m_regs[idx] = m_pc + sign_extend<PCoffset9>(offset);
+        setcc(m_regs[idx]);
+    }
+
+    template<>
+    void cpu::perform<opcode::NOT>(std::uint16_t bin) {
+        auto [a, b] = decode<DR, SR1>(bin);
+        m_regs[a] = ~m_regs[b];
+        setcc(m_regs[a]);
+    }
+
+    template<>
+    void cpu::perform<opcode::RTI>([[maybe_unused]] std::uint16_t bin) {
+        // TODO
+    }
+
+    template<>
+    void cpu::perform<opcode::ST>(std::uint16_t bin) {
+        auto [idx, offset] = decode<SR, PCoffset9>(bin);
+        m_memory[m_pc + sign_extend<PCoffset9>(offset)] = m_regs[idx];
+    }
+
+    template<>
+    void cpu::perform<opcode::STI>(std::uint16_t bin) {
+        auto [a, offset] = decode<SR, PCoffset9>(bin);
+        auto b = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
+        m_memory[b] = m_regs[a];
+    }
+
+    template<>
+    void cpu::perform<opcode::STR>(std::uint16_t bin) {
+        auto [a, b, offset] = decode<SR, BaseR, offset6>(bin);
+        m_memory[b + sign_extend<offset6>(offset)] = m_regs[a];
+    }
+
+    template<>
+    void cpu::perform<opcode::TRAP>(std::uint16_t bin) {
+        auto [offset] = decode<trapvect8>(bin);
+        offset = zero_extend<trapvect8>(offset);
+        offset = offset & 0xFF;
+        m_regs[7] = m_pc;
+        // m_pc = m_memory[zero_extend<trapvect8>(offset)];
+
+        if (offset == 0x25) {
+            m_halted = true;
+            return;
+        }
+
+        if (offset == 0x22) {
+            std::uint16_t idx = m_regs[0];
+            while (m_memory[idx] != 0x0000) {
+                std::cout << static_cast<unsigned char>(m_memory[idx]);
+                ++idx;
+            }
+            return;
+        }
+
+        if (offset == 0x20) {
+            m_regs[0] = 'a';
+        }
+    }
     void cpu::execute(std::uint16_t bin) {
         auto op = static_cast<opcode>(bin >> 12);
 
@@ -71,41 +223,6 @@ namespace lc3 {
         m_condition.z = (value == 0);
         m_condition.p = (value < 0);
     }
-}
 
-int main() {
-    [[maybe_unused]] std::uint16_t program[]{
-        0xE002,
-        0xF022,
-        0xF025,
-        0x0048,
-        0x0000
-    };
-
-    [[maybe_unused]] std::uint16_t prog[]{
-        0x200A,
-        0x260B,
-        0x2409,
-        0x1E20,
-        0xE009,
-        0xF022,
-        0x11E0,
-        0x16C0,
-        0x14BF,
-        0x0BF9,
-        0xF025,
-        0x0003,
-        0x000A,
-        0x0000,
-        0x0068,
-        0x006F,
-        0x0069,
-        0x0000,
-        0x0000,
-    };
-
-    lc3::cpu cpu{};
-    cpu.load_from_obj_file("./wheel");
-    cpu.run();
 }
 
