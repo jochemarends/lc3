@@ -6,6 +6,12 @@
 #include <exception>
 
 namespace lc3 {
+    void cpu::run() {
+        while(!m_halted) {
+            execute(m_memory[m_pc++]);
+        }
+    }
+
     void cpu::execute(std::uint16_t bin) {
         auto op = static_cast<opcode>(bin >> 12);
 
@@ -68,6 +74,16 @@ namespace lc3 {
 }
 
 int main() {
+    std::uint16_t program[]{
+        0xE002,
+        0xF022,
+        0xF025,
+        0x0048,
+        0x0000
+    };
+
     lc3::cpu cpu{};
+    cpu.load(program);
+    cpu.run();
 }
 

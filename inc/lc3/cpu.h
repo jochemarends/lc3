@@ -1,6 +1,7 @@
 #ifndef CPU_H
 #define CPU_H
 
+#include <iostream>
 #include <cstdint>
 #include <vector>
 #include <algorithm>
@@ -17,8 +18,9 @@ namespace lc3 {
     class cpu {
     public:
         void load(const std::ranges::input_range auto& bin) {
-            m_program.clear();
-            std::ranges::copy(bin, std::back_inserter(m_program));
+            //m_program.clear();
+            // std::ranges::copy(bin, std::back_inserter(m_program));
+            std::ranges::copy(bin, m_memory);
         }
 
         void execute(std::uint16_t bin);
@@ -36,7 +38,9 @@ namespace lc3 {
 
         std::int16_t m_regs[8]{};
 
-        std::int16_t m_memory[100]{};
+        std::int16_t m_memory[0xFFFF]{};
+
+        bool m_halted{};
 
         struct {
             unsigned int n : 1;
@@ -61,7 +65,7 @@ namespace lc3 {
     void cpu::perform<opcode::AND>(std::uint16_t bin) {
         if (bit_at<5>(bin)) {
             auto [a, b, c] = decode<DR, SR1, SR2>(bin);
-            m_regs[a] = m_regs[b] + m_regs[c];
+            m_regs[a] = m_regs[b] & m_regs[c];
         }
         else {
             auto [a, b, c] = decode<DR, SR1, imm5>(bin);
@@ -71,25 +75,25 @@ namespace lc3 {
 
     template<>
     void cpu::perform<opcode::BR>(std::uint16_t bin) {
+        auto [offset] = decode<PCoffset9>(bin);
+
         if (bit_at<11>(bin) && m_condition.n) {
-            auto [offset] = decode<PCoffset9>(bin);
             m_pc += sign_extend<PCoffset9>(offset);
         }
 
         if (bit_at<10>(bin) && m_condition.z) {
-            auto [offset] = decode<PCoffset9>(bin);
             m_pc += sign_extend<PCoffset9>(offset);
         }
 
         if (bit_at<9>(bin) && m_condition.p) {
-            auto [offset] = decode<PCoffset9>(bin);
             m_pc += sign_extend<PCoffset9>(offset);
         }
     }
 
     template<>
     void cpu::perform<opcode::JMP>(std::uint16_t bin) { 
-        m_pc = m_regs[decode<BaseR>(bin).front()];
+        auto [idx] = decode<BaseR>(bin);
+        m_pc = m_regs[idx];
     }
 
     template<>
@@ -97,8 +101,8 @@ namespace lc3 {
         m_regs[7] = m_pc;
 
         if (bit_at<11>(bin) == 0) {
-            auto [reg] = decode<BaseR>(bin);
-            m_pc = m_regs[reg];
+            auto [idx] = decode<BaseR>(bin);
+            m_pc = m_regs[idx];
         }
         else {
             auto [offset] = decode<PCoffset11>(bin);
@@ -108,38 +112,37 @@ namespace lc3 {
 
     template<>
     void cpu::perform<opcode::LD>(std::uint16_t bin) {
-        auto [reg, offset] = decode<DR, PCoffset9>(bin);
-        m_regs[reg] = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
-        setcc(m_regs[reg]);
+        auto [idx, offset] = decode<DR, PCoffset9>(bin);
+        m_regs[idx] = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
+        setcc(m_regs[idx]);
     }
 
     template<>
     void cpu::perform<opcode::LDI>(std::uint16_t bin) {
-        auto [reg, offset] = decode<DR, PCoffset9>(bin);
-        auto value = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
-        m_regs[reg] = value;
-        setcc(value);
+        auto [idx, offset] = decode<DR, PCoffset9>(bin);
+        m_regs[idx] = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
+        setcc(m_regs[idx]);
     }
 
     template<>
     void cpu::perform<opcode::LDR>(std::uint16_t bin) {
-        auto [dest, base, offset] = decode<DR, BaseR, offset6>(bin);
-        m_regs[dest] = m_memory[base + sign_extend<offset6>(bin)];
-        setcc(m_regs[dest]);
+        auto [a, b, offset] = decode<DR, BaseR, offset6>(bin);
+        m_regs[a] = m_memory[b + sign_extend<offset6>(offset)];
+        setcc(m_regs[a]);
     }
 
     template<>
     void cpu::perform<opcode::LEA>(std::uint16_t bin) {
-        auto [dest, offset] = decode<DR, PCoffset9>(bin);
-        m_regs[dest] = m_pc + sign_extend<PCoffset9>(offset);
-        setcc(m_regs[dest]);
+        auto [idx, offset] = decode<DR, PCoffset9>(bin);
+        m_regs[idx] = m_pc + sign_extend<PCoffset9>(offset);
+        setcc(m_regs[idx]);
     }
 
     template<>
     void cpu::perform<opcode::NOT>(std::uint16_t bin) {
-        auto [dst, src] = decode<DR, SR1>(bin);
-        m_regs[dst] = ~m_regs[src];
-        setcc(m_regs[dst]);
+        auto [a, b] = decode<DR, SR1>(bin);
+        m_regs[a] = ~m_regs[b];
+        setcc(m_regs[a]);
     }
 
     template<>
@@ -149,26 +152,41 @@ namespace lc3 {
 
     template<>
     void cpu::perform<opcode::ST>(std::uint16_t bin) {
-        auto [src, offset] = decode<SR, PCoffset9>(bin);
-        m_memory[m_pc + sign_extend<PCoffset9>(offset)] = m_regs[src];
+        auto [idx, offset] = decode<SR, PCoffset9>(bin);
+        m_memory[m_pc + sign_extend<PCoffset9>(offset)] = m_regs[idx];
     }
 
     template<>
     void cpu::perform<opcode::STI>(std::uint16_t bin) {
-        auto [src, offset] = decode<SR, PCoffset9>(bin);
-        auto value = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
-        m_memory[value] = m_regs[src];
+        auto [a, offset] = decode<SR, PCoffset9>(bin);
+        auto b = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
+        m_memory[b] = m_regs[a];
     }
 
     template<>
     void cpu::perform<opcode::STR>(std::uint16_t bin) {
-        auto [src, base, offset] = decode<SR, BaseR, offset6>(bin);
-        m_memory[base + sign_extend<offset6>(offset)] = m_regs[src];
+        auto [a, b, offset] = decode<SR, BaseR, offset6>(bin);
+        m_memory[b + sign_extend<offset6>(offset)] = m_regs[a];
     }
 
     template<>
-    void cpu::perform<opcode::TRAP>([[maybe_unused]] std::uint16_t bin) {
-        // TODO
+    void cpu::perform<opcode::TRAP>(std::uint16_t bin) {
+        auto [offset] = decode<trapvect8>(bin);
+        offset = zero_extend<trapvect8>(offset);
+        offset = offset & 0xFF;
+        m_regs[7] = m_pc;
+        // m_pc = m_memory[zero_extend<trapvect8>(offset)];
+
+        if (offset == 0x25) {
+            m_halted = true;
+            return;
+        }
+
+        std::uint16_t idx = m_regs[0];
+        while (m_memory[idx] != 0x0000) {
+            std::cout << static_cast<unsigned char>(m_memory[idx]);
+            ++idx;
+        }
     }
 }
 

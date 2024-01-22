@@ -54,6 +54,11 @@ namespace lc3 {
         static constexpr std::uint16_t width{11};
         static constexpr std::uint16_t index{0};
     };
+
+    struct trapvect8 {
+        static constexpr std::uint16_t width{8};
+        static constexpr std::uint16_t index{0};
+    };
 }
 
 #endif
