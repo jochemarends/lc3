@@ -4,7 +4,7 @@
 int main() {
     lc3::cpu cpu{};
 
-    std::ifstream ifs{"./helloworld", std::ios::binary};
+    std::ifstream ifs{"./greet", std::ios::binary};
 
     auto read = [&ifs]() {
         lc3::word word{};

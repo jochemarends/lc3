@@ -24,26 +24,22 @@ namespace lc3 {
         else {
             auto [a, b, c] = decode<DR, SR1, imm5>(bin);
             m_regs[a] = m_regs[b] + sign_extend<imm5>(c);
-            //std::cout << "ADD: " << a << ", " << b << ", " << sign_extend<imm5>(c) << '\n';
-            //char ch{};
-            //std::cin >> ch;
             setcc(m_regs[a]);
         }
     }
 
     template<>
-    void cpu::perform<opcode::AND>(std::uint16_t bin) {
-        if (bit_at<5>(bin)) {
+    void cpu::perform<opcode::AND>(word bin) {
+        if (bit_at<5>(bin) == 0) {
             auto [a, b, c] = decode<DR, SR1, SR2>(bin);
-            m_regs[a] = m_regs[b] & m_regs[c];
+            m_regs[a] = static_cast<sword>(m_regs[b] & m_regs[c]);
             setcc(m_regs[a]);
         }
         else {
             auto [a, b, c] = decode<DR, SR1, imm5>(bin);
-            m_regs[a] = m_regs[b] & sign_extend<imm5>(c);
+            m_regs[a] = static_cast<sword>(m_regs[b] & sign_extend<imm5>(c));
             setcc(m_regs[a]);
         }
-
     }
 
     template<>
@@ -64,7 +60,7 @@ namespace lc3 {
     }
 
     template<>
-    void cpu::perform<opcode::JMP>(std::uint16_t bin) { 
+    void cpu::perform<opcode::JMP>(word bin) {
         auto [idx] = decode<BaseR>(bin);
         m_pc = m_regs[idx];
     }
