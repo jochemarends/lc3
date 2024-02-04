@@ -1,3 +1,8 @@
+/**
+ * @file extend.h
+ * @author Jochem Arends
+ */
+
 #ifndef EXTEND_H
 #define EXTEND_H
 
@@ -20,3 +25,4 @@ namespace lc3 {
 }
 
 #endif
+

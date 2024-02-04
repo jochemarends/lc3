@@ -1,22 +1,17 @@
+/**
+ * @file memory.h
+ * @author Jochem Arends
+ */
+
 #ifndef MEMORY_H
 #define MEMORY_H
 
+#include <lc3/types.h>
+#include <array>
+#include <limits>
+
 namespace lc3 {
-    struct memory {
-        using sword = std::int16_t;
-        using word = std::uint16_t;
-
-        sword& operator[](word idx) {
-            return m_data[idx];
-
-        }
-
-        sword m_data[0xFFFF]{};
-
-        sword* data() {
-            return m_data;
-        }
-    };
+    using memory = std::array<sword, 0x10000>;
 }
 
 #endif

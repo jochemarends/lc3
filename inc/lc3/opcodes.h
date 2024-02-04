@@ -1,3 +1,10 @@
+/**
+ * @file opcodes.h
+ * @author Jochem Arends
+ */
+
+// tag::adoc[]
+
 #ifndef OPCODES_H
 #define OPCODES_H
 
@@ -22,3 +29,6 @@ namespace lc3 {
 }
 
 #endif
+
+// end::adoc[]
+

@@ -1,5 +1,7 @@
 #include <lc3/cpu.h>
 #include <bit>
+#include <fstream>
+#include <vector>
 
 int main() {
     lc3::cpu cpu{};

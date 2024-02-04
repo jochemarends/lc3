@@ -1,6 +1,11 @@
+/**
+ * @file cpu.cpp
+ * @author Jochem Arends
+ */
+
 #include <lc3/cpu.h>
 #include <lc3/extend.h>
-#include <lc3/extend.h>
+#include <lc3/encoding.h>
 #include <lc3/opcodes.h>
 #include <iostream>
 #include <exception>
@@ -175,8 +180,6 @@ namespace lc3 {
     }
     void cpu::execute(std::uint16_t bin) {
         auto op = static_cast<opcode>(bin >> 12);
-        //std::cout << (bin >> 12) << " -> " <<  (bin & 0x0FFF) << '\n';
-        //std::cin.get();
 
         switch (op) {
         case opcode::ADD:
@@ -234,6 +237,5 @@ namespace lc3 {
         m_condition.z = (value == 0);
         m_condition.p = (value > 0);
     }
-
 }
 

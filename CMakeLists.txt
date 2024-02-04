@@ -22,4 +22,3 @@ target_compile_options(demo PRIVATE -Werror -Wall -Wextra -pedantic)
 
 target_link_libraries(demo PRIVATE lc3)
 
-
