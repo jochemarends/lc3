@@ -1,12 +1,18 @@
+// tag::ignore[]
+
 /**
  * @file encoding.h
  * @author Jochem Arends
  */
 
+// end::ignore[]
+
 #ifndef ENCODING_H
 #define ENCODING_H
 
 #include <lc3/types.h>
+#include <array>
+#include <concepts>
 
 namespace lc3 {
     template<std::size_t N>

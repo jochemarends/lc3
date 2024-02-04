@@ -1,7 +1,11 @@
+// tag::ignore[]
+
 /**
  * @file cpu.h
  * @author Jochem Arends
  */
+
+// end::ignore[]
 
 #ifndef CPU_H
 #define CPU_H
@@ -10,7 +14,6 @@
 #include <lc3/opcodes.h>
 #include <lc3/types.h>
 #include <algorithm>
-#include <cstdint>
 #include <ranges>
 
 namespace lc3 {

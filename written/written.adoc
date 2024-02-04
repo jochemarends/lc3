@@ -1,0 +1,104 @@
+= Virtual Machines
+:source-highlighter: pygments
+
+[.text-center]
+Jochem Arends
+
+== Introduction
+
+Virtual Machine are programs to emulate hardware.
+
+== Little Computer 3
+
+Little Computer 3 (LC-3) is an educational computer architecuture developed at the University of Texas at Austin. The LC-3 has a simple yet versatile instruction set.
+
+== Registers
+
+Registers are a type of computer memory that are used by instructions. The LC-3 has eight 16-bit general purpose registers, these are called `R0-R7`. There's also a 16-bit program counter which is ofter referred to as `PC`.
+
+== Instruction Encoding
+
+The four most significant bits of an intruction form the opcode. The LC-3 architecture knows 15 distinct operations, which are listed below in the form of an `enum class`, but can also be found in the ISA.
+
+.opcodes.h
+[source, cpp]
+----
+include::../inc/lc3/opcodes.h[tag=adoc]
+----
+
+== Instruction Decoding
+
+Instructions consist of named bit sequences that occupy fixed sequence of bits. 
+
+[cols="1,1",stripes=even]
+|===
+|Term |Bits
+
+|Destination Register (`DR`)
+|11..9
+
+|Source Register (`SR`)
+|11..9
+
+|Source Register 1 (`SR1`)
+|8..6
+
+|Source Register 2 (`SR2`)
+|2..0
+
+|Base Register (`BaseR`)
+|8..6
+
+|5-bit Immediate Value (`imm5`)
+|4..0
+
+|6-bit Offset Value (`offset6`)
+|5..0
+
+|9-bit PC Offset Value (`PCoffset9`)
+|8..0
+
+|11-bit PC Offset Value (`PCoffset11`)
+|10..0
+
+|8-bit Trap Vector Value (`trapvect8`)
+|7..0
+|===
+
+.types.h
+[source, cpp]
+----
+include::../inc/lc3/types.h[tag=adoc]
+    /* etc.. */
+}
+
+#endif
+----
+
+.encoding.h
+[source, cpp]
+----
+include::../inc/lc3/encoding.h[tag=!ignore]
+----
+
+== Memory
+
+The LC-3 architecture uses 16-bit wide addresses. For now we just use an `std::array` for memory, but a type alias is used so it's easier to change in the future, such as adding memmory mapped IO.
+
+.memory.h
+[source, cpp]
+----
+include::../inc/lc3/memory.h[tag=!ignore]
+----
+
+<<<
+
+== The CPU
+
+.cpu.h
+[source, cpp]
+----
+include::../inc/lc3/cpu.h[tag=!ignore]
+----
+
+
