@@ -177,6 +177,7 @@ namespace lc3 {
         }
 
     }
+
     void cpu::execute(std::uint16_t bin) {
         auto op = static_cast<opcode>(bin >> 12);
 

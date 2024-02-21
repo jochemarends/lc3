@@ -7,27 +7,30 @@ Jochem Arends
 == Introduction
 
 Virtual Machine (VM) are programs that emulates computer hardware. 
-Virtual machines make it possible to run programs that run programs that aren't written for your device.
-In this document I'm going to explain how I wrote a virtual machine using {cpp}20.
+Virtual machines make it possible to run programs that aren't written for your device.
+In this document I'm going to explain how I wrote a virtual machine using {cpp}.
 
 == Little Computer 3
 
 Little Computer 3 (LC-3) is an educational computer architecuture developed at the University of Texas at Austin.
 The LC-3 has a simple yet versatile instruction set. 
-Many programs for this architecture can be found online, which makes our VM easy to test.
-Many resources for the LC-3 architecture can be found online, including an assembler and a C compiler.
+Many programs for this architecture can be found online, which makes the VM easy to test.
+On the internet, some tools for this architecture can be found, including an assembler and a C compiler.
 
 == Registers
 
-Registers are a type of computer memory that typically build into the CPU.
-Registers are used by instructions.
+Registers are a type of computer memory that typically is build into the CPU.
+This type of memory is usually faster to access for a CPU than RAM.
 The LC-3 has eight 16-bit general purpose registers, these are called `R0-R7`.
-There's also a 16-bit program counter which is ofter referred to as `PC`.
+These registers can be used as operands for instructions.
+Besides these general purpose registers, there's also a 16-bit program counter which is ofter referred to as `PC` and three conditional codes (which I will cover later).
+
+<<<
 
 == Instruction Encoding
 
 The four most significant bits of an intruction form the opcode.
-The LC-3 architecture knows 15 distinct operations, which are listed below in the form of an `enum class`, but can also be found in the ISA.
+The LC-3 architecture knows 15 distinct operations, which are listed below in the form of an `enum class`, but can also be found in the ISA at page number 525.
 
 .opcodes.h
 [source, cpp]
@@ -35,9 +38,15 @@ The LC-3 architecture knows 15 distinct operations, which are listed below in th
 include::../inc/lc3/opcodes.h[tag=adoc]
 ----
 
+<<<
+
 == Instruction Decoding
 
 Instructions consist of named bit sequences that occupy fixed sequence of bits. 
+When looking at the instruction encodings (ISA page number 525) I found that many of them follow silimar patterns.
+For example, instruction uses a desination register, it will always encode that register at bits 11 till 9.
+When looking at any other these types, the same pattern can be found.
+All the types are listed below together with the bits they occupy in an encoding.
 
 [cols="1,1",stripes=even]
 |===
@@ -74,6 +83,10 @@ Instructions consist of named bit sequences that occupy fixed sequence of bits.
 |7..0
 |===
 
+A nice thing of this pattern is that 
+These types can be  as a sequence of bits.
+They can be represented using a width and an index (where `0` refers the the LSB).
+
 .types.h
 [source, cpp]
 ----
@@ -96,7 +109,7 @@ include::../inc/lc3/encoding.h[tag=!ignore]
 
 The LC-3 architecture uses 16-bit wide addresses, each of these addresses refers to a 16-bit location in memory. 
 As for now, a simple `std::array` can be used for memory.
-We make type alias for allowing us to easily change its defenition in the future.
+I made it a type alias for allowing us to easily change its defenition in the future.
 This can come in handy when we want to implement memory mapped IO.
 
 .memory.h
