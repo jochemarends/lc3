@@ -18,7 +18,6 @@ namespace lc3 {
         }
     }
 
-
     template<>
     void cpu::perform<opcode::ADD>(std::uint16_t bin) {
         if (bit_at<5>(bin) == 0) {
