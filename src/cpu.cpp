@@ -8,7 +8,7 @@
 #include <lc3/encoding.h>
 #include <lc3/opcodes.h>
 #include <iostream>
-#include <exception>
+#include <stdexcept>
 
 namespace lc3 {
     void cpu::run() {
@@ -228,7 +228,7 @@ namespace lc3 {
             perform<opcode::TRAP>(bin);
             break;
         default:
-            throw std::runtime_error{"ERROR: invalid opcode"};
+            throw std::invalid_argument{"ERROR: invalid opcode"};
         }
     }
 
