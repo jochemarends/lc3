@@ -14,8 +14,8 @@ In this document I'm going to explain how I wrote a virtual machine using {cpp}.
 
 Little Computer 3 (LC-3) is an educational computer architecuture developed at the University of Texas at Austin.
 The LC-3 has a simple yet versatile instruction set. 
-Many programs for this architecture can be found online, which makes the VM easy to test.
-On the internet, some tools for this architecture can be found, including an assembler and a C compiler.
+Many programs for this architecture can be found online, which is great for testing the VM.
+Besides programs, on the internet, tools for this architecture can be found, including an assembler and a C compiler.
 
 == Registers
 
@@ -43,10 +43,10 @@ include::../inc/lc3/opcodes.h[tag=adoc]
 == Instruction Decoding
 
 Instructions consist of named bit sequences that occupy fixed sequence of bits. 
-When looking at the instruction encodings (ISA page number 525) I found that many of them follow silimar patterns.
-For example, instruction uses a desination register, it will always encode that register at bits 11 till 9.
-When looking at any other these types, the same pattern can be found.
-All the types are listed below together with the bits they occupy in an encoding.
+When looking at the instruction encodings (ISA page number 525) I found that many of them follow similar patterns.
+For example, instruction that use a desination register, it always encode that register index at bits 11 till 9.
+When looking at any other types, the same pattern can be found.
+All the types are listed below together with the bits they occupy in encodings.
 
 [cols="1,1",stripes=even]
 |===
@@ -83,9 +83,9 @@ All the types are listed below together with the bits they occupy in an encoding
 |7..0
 |===
 
-A nice thing of this pattern is that 
-These types can be  as a sequence of bits.
-They can be represented using a width and an index (where `0` refers the the LSB).
+A nice thing of this pattern is that every type can be represented using a width and an index (where `0` refers the the LSB).
+Below can be seen how these types can be represented in {cpp}.
+The `lc3::word` and `lc3::sword` aliases defined in this header but will only be used later by other parts of the program.
 
 .types.h
 [source, cpp]
@@ -96,6 +96,9 @@ include::../inc/lc3/types.h[tag=adoc]
 
 #endif
 ----
+
+Now that we've defined which bits each type occupies, functions can be made to extract the bits.
+`lc3::bit_at` extracts a single bit from an integer.
 
 .encoding.h
 [source, cpp]
