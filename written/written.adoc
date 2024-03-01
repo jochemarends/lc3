@@ -97,7 +97,9 @@ include::../inc/lc3/types.h[tag=adoc]
 #endif
 ----
 
-Now that we've defined which bits each type occupies, functions can be made to extract the bits.
+Now that we've defined which bits each type occupies, we can make functions to extract the bits of these types.
+`lc3::extract` extracts a single type from 16-bit data.
+`lc3::decode` extracts a variable amount of type from 16-bit data.
 `lc3::bit_at` extracts a single bit from an integer.
 
 .encoding.h
@@ -125,7 +127,7 @@ include::../inc/lc3/memory.h[tag=!ignore]
 
 == The CPU
 
-Below I've pasted the declaration of a structure that represents a LC-3 CPU. It's quite a lot, but I will explain every member.
+Below I've pasted the declaration of a structure that represents a LC-3 CPU. It's quite a lot compared to the other code listings, but I will explain everything in detail.
 
 .cpu.h
 [source, cpp]
@@ -133,3 +135,35 @@ Below I've pasted the declaration of a structure that represents a LC-3 CPU. It'
 include::../inc/lc3/cpu.h[tag=!ignore]
 ----
 
+=== The Public Interface
+
+The public interface of the `lc3::cpu` class consists of three member functions: `lc3::cpu::load`, `lc3::cpu::execute`, and `lc3::cpu::run`.
+The `lc3::cpu::load` function is for loading programs.
+It accepts any sequence of 16-bit data that conforms to the `std::ranges::input_range` concept.
+The program will get loaded at address `0x0000` but an optional parameter can be passed to load it at a different offset.
+The `lc3:;cpu::execute` function accepts a single machine code instruction and executes it.
+The `lc3:;cpu::run` function keeps executing machine code instructions starting at the current program counter and keeps doing this till the CPU gets halted (which will later be explained how to).
+
+=== The Implementation Details
+
+
+
+On second thoughts it does not make much sense to keep the memory inside the CPU since they're different units.
+It would make more sense if they both were part of a class that represents the machine as a whole (or  alternatively rename `lc3::cpu` to `lc3::machine`).
+Once I've realised this, I already wrote it this way and didn't bother to change it anymore.
+But it would be something I would take in consideration next time when writing a virtual machine.
+
+.Performing Addition
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=add]
+}
+----
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=sti]
+}
+----

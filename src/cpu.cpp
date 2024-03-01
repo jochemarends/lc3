@@ -18,6 +18,7 @@ namespace lc3 {
         }
     }
 
+// tag::add[]
     template<>
     void cpu::perform<opcode::ADD>(std::uint16_t bin) {
         if (bit_at<5>(bin) == 0) {
@@ -31,6 +32,7 @@ namespace lc3 {
             setcc(m_regs[a]);
         }
     }
+// end::add[]
 
     template<>
     void cpu::perform<opcode::AND>(word bin) {
@@ -125,15 +127,19 @@ namespace lc3 {
 
     template<>
     void cpu::perform<opcode::ST>(std::uint16_t bin) {
-        auto [idx, offset] = decode<SR, PCoffset9>(bin);
-        m_memory[m_pc + sign_extend<PCoffset9>(offset)] = m_regs[idx];
+        auto [reg, offset] = decode<SR, PCoffset9>(bin);
+        auto address = m_pc + sign_extend<PCoffset9>(offset);
+        m_memory[address] = m_regs[reg];
     }
 
+// tag::sti[]
     template<>
     void cpu::perform<opcode::STI>(std::uint16_t bin) {
-        auto [idx, offset] = decode<SR, PCoffset9>(bin);
-        m_memory[m_memory[m_pc + sign_extend<PCoffset9>(offset)]] = m_regs[idx];
+        auto [reg, offset] = decode<SR, PCoffset9>(bin);
+        auto address = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
+        m_memory[address] = m_regs[reg];
     }
+// end::sti[]
 
     template<>
     void cpu::perform<opcode::STR>(std::uint16_t bin) {
