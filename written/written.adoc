@@ -189,6 +189,10 @@ For this reason I won't show the listing of the bitwise AND operation.
 
 === Conditional Branch
 
+This is the first operation that modifies control flow. It modifies the program counter explicitly based on the state of the conditional codes.
+The encoding consists of an offset and three bits which indicate what condition to check for.
+If the 11^th^, 10^th^, or 9^th^ bits are set, the offset will be added to the program counter if the conditional code `n`, `z`, or `p` are set respecitvely.
+
 [source, cpp]
 ----
 namespace lc3 {
