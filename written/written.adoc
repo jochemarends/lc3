@@ -142,11 +142,9 @@ The `lc3::cpu::load` function is for loading programs into memory.
 It accepts any sequence of 16-bit data that conforms to the `std::ranges::input_range` concept.
 By default the program gets loaded at address `0x0000` but an optional parameter can be specified in to load it at a different offset.
 The `lc3::cpu::execute` function accepts a single machine code instruction and executes it.
-The `lc3:;cpu::run` function keeps executing machine code instructions starting at the current program counter and keeps doing this till the CPU gets halted (which will later be explained how to).
+The `lc3::cpu::run` function keeps executing machine code instructions starting at the current program counter and keeps doing this till the CPU gets halted (which will later be explained how to).
 
 === The Implementation Details
-
-
 
 On second thought it does not make much sense to keep the memory inside the CPU since they're different units.
 It would make more sense if they both were part of a class that represents the machine as a whole (alternatively rename `lc3::cpu` to `lc3::machine`).
@@ -158,6 +156,8 @@ However, it is something I would take in consideration if writing a virtual mach
 In this section I'll explain how I've implemented all 15 operations.
 I will do by
 
+Again, for a more detailed description, consult the ISA.
+
 === Addition
 
 ----
@@ -168,8 +168,10 @@ else
 setcc();
 ----
 
-The first operation that I've implemented was addition.
-Again, for a more detailed description, consult the ISA.
+The first operation that I've implemented is addition.
+This operation has two variants, one where both source operands are registers, and another one where the first source operand is a register while the second is a 5-bit signed integer value.
+The 5^th^ bit of the encoded instruction indicates which of these variants should be executed.
+If this bit is cleared, addition should be performed between two registers; otherwise, addition between a register and an immediate value must be performed.
 
 .Performing Addition
 [source, cpp]
@@ -179,9 +181,18 @@ include::../src/cpu.cpp[tag=add]
 }
 ----
 
+=== Bitwise AND
+
+The bitwise AND operation is almost identical to addition operation except for that instead of the `+` operator, the `&` operator should be used.
+For this reason I won't show the listing of the bitwise AND operation.
+
+
+=== Conditional Branch
+
 [source, cpp]
 ----
 namespace lc3 {
-include::../src/cpu.cpp[tag=sti]
+include::../src/cpu.cpp[tag=br]
 }
 ----
+

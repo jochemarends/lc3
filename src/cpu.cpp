@@ -48,6 +48,7 @@ namespace lc3 {
         }
     }
 
+// tag::br[]
     template<>
     void cpu::perform<opcode::BR>(std::uint16_t bin) {
         auto [offset] = decode<PCoffset9>(bin);
@@ -64,6 +65,7 @@ namespace lc3 {
             m_pc += sign_extend<PCoffset9>(offset);
         }
     }
+// end::br[]
 
     template<>
     void cpu::perform<opcode::JMP>(word bin) {
