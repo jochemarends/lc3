@@ -67,12 +67,15 @@ namespace lc3 {
     }
 // end::br[]
 
+// tag::jmp[]
     template<>
     void cpu::perform<opcode::JMP>(word bin) {
         auto [idx] = decode<BaseR>(bin);
         m_pc = m_regs[idx];
     }
+// end::jmp[]
 
+// tag::jsr[]
     template<>
     void cpu::perform<opcode::JSR>(std::uint16_t bin) {
         m_regs[7] = m_pc;
@@ -86,13 +89,16 @@ namespace lc3 {
             m_pc += sign_extend<PCoffset11>(offset);
         }
     }
+// end::jsr[]
 
+// tag::ld[]
     template<>
     void cpu::perform<opcode::LD>(std::uint16_t bin) {
         auto [idx, offset] = decode<DR, PCoffset9>(bin);
         m_regs[idx] = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
         setcc(m_regs[idx]);
     }
+// end::ld[]
 
     template<>
     void cpu::perform<opcode::LDI>(std::uint16_t bin) {
