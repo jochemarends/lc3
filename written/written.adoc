@@ -161,6 +161,9 @@ It would make more sense if they both were part of a class that represents the m
 Once I've noticed this, I was already working on this document and did not bother to change it anymore.
 However, it is something I would take in consideration if writing a virtual machine ever again.
 
+`lc3::cpu::perform` member function takes an opcode as template parameter and an encoded instruction as regular parameter.
+For each opcode, I've defined a template specialization.
+
 `lc3::cpu::setcc` is a small member function used to set the conditional codes according to the state of its passed value.
 
 [source, cpp]
@@ -169,6 +172,9 @@ namespace lc3 {
 include::../src/cpu.cpp[tag=setcc]
 }
 ----
+
+Whats left are the private data members.
+There is a program counter (`m_pc`), eight general purpose registers (`m_regs`), a boolean value that indicates whether the CPU is halted (`m_halted`), and the conditional codes (`m_condition`).
 
 === Operations
 
@@ -254,6 +260,9 @@ include::../src/cpu.cpp[tag=ld]
 
 === Load Indirect
 
+This operation (`LDI`) is similar to the `LD` operation.
+Its encoding also contains a `pcOffset9` but instead of just loading the value at this offset, it interprets the value at this offset as another address, the value at this address will get loaded into the desination register.
+
 [source, cpp]
 ----
 namespace lc3 {
@@ -262,6 +271,11 @@ include::../src/cpu.cpp[tag=ldi]
 ----
 
 === Load Base+offset
+
+Just like `LDI`, this operation is also similar to `LD`.
+The `LD` operation has a `pcOffset9` as operand, which is an offset relative to the program counter.
+With this operation however, a base register can be specified.
+Its second operand is a `offset6` which is the offset relative to the base register.
 
 [source, cpp]
 ----
@@ -272,6 +286,9 @@ include::../src/cpu.cpp[tag=ldr]
 
 === Load Effective Address
 
+This operation is again similar to `LD` but doesn't dereference the result.
+It just stores the address you get when adding the program counter  to the offset into the destination register.
+
 [source, cpp]
 ----
 namespace lc3 {
@@ -279,8 +296,9 @@ include::../src/cpu.cpp[tag=lea]
 }
 ----
 
-
 === Bit-Wise Complement
+
+This operation simply negates all bits of a general purpose register.
 
 [source, cpp]
 ----
@@ -299,6 +317,7 @@ include::../src/cpu.cpp[tag=st]
 ----
 
 === Store Indirect
+
 
 [source, cpp]
 ----
