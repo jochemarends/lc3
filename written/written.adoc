@@ -309,6 +309,8 @@ include::../src/cpu.cpp[tag=not]
 
 === Store
 
+This operation copies the contents of a register into a memory location.
+
 [source, cpp]
 ----
 namespace lc3 {
@@ -318,6 +320,7 @@ include::../src/cpu.cpp[tag=st]
 
 === Store Indirect
 
+This operation is similar to `LDI` but instead of loading the value an address points to, it copies the contents of a register to the memory an address points to.
 
 [source, cpp]
 ----
@@ -327,6 +330,10 @@ include::../src/cpu.cpp[tag=sti]
 ----
 
 === Store Base+offset
+
+The `ST` operation has a `pcOffset9` as operand, which is an offset relative to the program counter.
+With this operation however, a base register can be specified.
+Its second operand is a `offset6` which is the offset relative to the base register.
 
 [source, cpp]
 ----
@@ -349,7 +356,11 @@ include::../src/cpu.cpp[tag=trap]
 }
 ----
 
+<<<
+
 === Testing the VM
+
+http://lc3tutor.org/
 
 [source, cpp]
 ----
