@@ -173,39 +173,45 @@ namespace lc3 {
 // tag::trap[]
     template<>
     void cpu::perform<opcode::TRAP>(std::uint16_t bin) {
-        auto [offset] = decode<trapvect8>(bin);
-        offset = zero_extend<trapvect8>(offset);
-        offset = offset & 0xFF;
-        m_regs[7] = m_pc;
-        // m_pc = m_memory[zero_extend<trapvect8>(offset)];
+        enum class vectors {
+            GETC  = 0x20,
+            OUT   = 0x21,
+            PUTS  = 0x22,
+            IN    = 0x23,
+            PUTSP = 0x24,
+            HALT  = 0x25,
+        };
 
-        if (offset == 0x25) {
-            m_halted = true;
-            return;
-        }
+        using enum vectors;
 
-        if (offset == 0x22) {
-            std::uint16_t idx = m_regs[0];
-            while (m_memory[idx] != 0x0000) {
-                std::cout << static_cast<unsigned char>(m_memory[idx]);
-                ++idx;
+        auto [trapvect] = decode<trapvect8>(bin);
+        auto vector = static_cast<vectors>(trapvect);
+
+        // character input
+        if (vector == GETC || vector == IN) {
+            if (vector == IN) {
+                std::cout << "Enter a character.\n";
             }
-            return;
-        }
-
-        if (offset == 0x20) {
             m_regs[0] = std::cin.get();
         }
 
-        if (offset == 0x23) {
-            std::cout << "enter a character\n";
-            m_regs[0] = std::cin.get();
-        }
-
-        if (offset == 0x21) {
+        // character output
+        if (vector == OUT) {
             std::cout << static_cast<char>(m_regs[0]);
         }
 
+        // string output
+        if (vector == PUTS) {
+            for (auto address = m_regs[0]; m_memory[address] != 0; ++address) {
+                auto ch = static_cast<char>(m_memory[address]);
+                std::cout << ch;
+            }
+        }
+
+        // halting the CPU
+        if (vector == HALT) {
+            m_halted = true;
+        }
     }
 // end::trap[]
 
@@ -263,10 +269,12 @@ namespace lc3 {
         }
     }
 
+// tag::setcc[]
     void cpu::setcc(std::int16_t value) {
         m_condition.n = (value < 0);
         m_condition.z = (value == 0);
         m_condition.p = (value > 0);
     }
+// end::setcc[]
 }
 

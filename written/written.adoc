@@ -17,21 +17,34 @@ The LC-3 has a simple yet versatile instruction set.
 Many programs for this architecture can be found online, which is great for testing the virtual machine.
 Besides programs, on the internet, tools for this architecture can be found, including an assembler and a C compiler.
 
-In this document I won't explain the syntax of the LC-3 assembly language but rather explain how I've implemented the virtual machine and explain.
+In this document I won't explain the syntax of the LC-3 assembly language or how to write programs for this architecture. 
+Rather I will explain how I've implemented the virtual machine, how the instruction are encoded, and what each instruction does.
 
-== Registers
+== General Purpose Registers
 
 Registers are a type of computer memory that typically is build into the CPU.
 This type of memory is usually faster to access for a CPU than RAM.
 The LC-3 has eight 16-bit general purpose registers, these are called `R0-R7`.
-These registers are used by for instructions to hold operands or store results.
-Besides these general purpose registers, there's also a 16-bit program counter which is ofter referred to as `PC` and three conditional codes (which I will cover later).
+The general purpose registers are used as operands for instructions or to store results.
 
-<<<
+== Program Counter
+
+Besides these general purpose registers, there's also a 16-bit program counter which is ofter referred to as `PC`.
+The program counter is basically a pointer that refers to the next instruction to be executed.
+When executing instructions the program the program counter automatically gets incremented but there are also instructions that explicitly set the program counter.
+
+== Conditional Codes
+
+The LC-3 contains three conditional codes which are set by some instruction.
+The three conditional codes are `N` (negative), `Z` (zero), and `P` (positive).
+Most instructions that modify the contents of a register set these codes according to the final value of that register.
+If the two's complement value of that register is less than zero, the `N` flag will get set.
+If the value is equal to zero, the `Z` flag gets set.
+Finally, if the final value is greater than zero, the `P` flag gets set.
 
 == Instruction Encoding
 
-The four most significant bits of an intruction form the opcode.
+The four most significant bits of an instruction form the opcode.
 The LC-3 architecture knows 15 distinct operations, which are listed below in the form of an `enum class`, but can also be found in the ISA at page number 525.
 
 .opcodes.h
@@ -39,8 +52,6 @@ The LC-3 architecture knows 15 distinct operations, which are listed below in th
 ----
 include::../inc/lc3/opcodes.h[tag=adoc]
 ----
-
-<<<
 
 == Instruction Decoding
 
@@ -110,8 +121,6 @@ Now that we've defined which bits each type occupies, we can make functions to e
 include::../inc/lc3/encoding.h[tag=!ignore]
 ----
 
-<<<
-
 == Memory
 
 The LC-3 architecture uses 16-bit wide addresses, each of these addresses refers to a 16-bit location in memory. 
@@ -125,11 +134,10 @@ This can come in handy when we want to implement memory mapped IO.
 include::../inc/lc3/memory.h[tag=!ignore]
 ----
 
-<<<
-
 == The CPU
 
-Below I've pasted the declaration of a structure that represents a LC-3 CPU. It's quite a lot compared to the other code listings, but I will explain everything in detail.
+Below I've pasted the declaration of a structure that represents a LC-3 CPU.
+It's quite a lot compared to the other code listings, but I will explain everything in detail.
 
 .cpu.h
 [source, cpp]
@@ -142,7 +150,7 @@ include::../inc/lc3/cpu.h[tag=!ignore]
 The public interface of the `lc3::cpu` class consists of three member functions: `lc3::cpu::load`, `lc3::cpu::execute`, and `lc3::cpu::run`.
 The `lc3::cpu::load` function is for loading programs into memory.
 It accepts any sequence of 16-bit data that conforms to the `std::ranges::input_range` concept.
-By default the program gets loaded at address `0x0000` but an optional parameter can be specified in to load it at a different offset.
+By default the program gets loaded at address `0x0000` but an optional parameter can be specified in order to load it at a different offset.
 The `lc3::cpu::execute` function accepts a single machine code instruction and executes it.
 The `lc3::cpu::run` function keeps executing machine code instructions starting at the current program counter and keeps doing this till the CPU gets halted (which will later be explained how to).
 
@@ -153,22 +161,23 @@ It would make more sense if they both were part of a class that represents the m
 Once I've noticed this, I was already working on this document and did not bother to change it anymore.
 However, it is something I would take in consideration if writing a virtual machine ever again.
 
+`lc3::cpu::setcc` is a small member function used to set the conditional codes according to the state of its passed value.
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=setcc]
+}
+----
+
 === Operations
 
-In this section I'll explain how I've implemented all 15 operations.
-I will do by
-
+In this section I will explain how I've implemented 15 operations.
+I'm going to roughly explain what each operation does and how I've implemented it.
 Again, for a more detailed description, consult the ISA.
+The ISA contain pseudo code for the logic behind each instruction which was really helpful to me.
 
 === Addition
-
-----
-if (bit[5] == 0)
-    DR=SR1+SR2;
-else
-    DR=SR1+SEXT(imm5);
-setcc();
-----
 
 The first operation that I've implemented is addition.
 This operation has two variants, one where both source operands are registers, and another one where the first source operand is a register while the second is a 5-bit signed integer value.
@@ -309,12 +318,22 @@ include::../src/cpu.cpp[tag=str]
 
 === System Call
 
-
+System calls provide a way for user programs to interact with the operating system.
+The `TRAP` operation (system call) can be used to call Trap Service Routines. 
+Normally these routines are located somewhere in memory but I've decided to hardcode them.
+The encoded instruction contains a trap vector (`trapvect8`) that indicates what type of system call needs to be performed.
 
 [source, cpp]
 ----
 namespace lc3 {
 include::../src/cpu.cpp[tag=trap]
 }
+----
+
+=== Testing the VM
+
+[source, cpp]
+----
+include::../src/main.cpp[]
 ----
 
