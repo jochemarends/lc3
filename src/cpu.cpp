@@ -100,45 +100,58 @@ namespace lc3 {
     }
 // end::ld[]
 
+// tag::ldi[]
     template<>
     void cpu::perform<opcode::LDI>(std::uint16_t bin) {
         auto [idx, offset] = decode<DR, PCoffset9>(bin);
         m_regs[idx] = m_memory[m_memory[m_pc + sign_extend<PCoffset9>(offset)]];
         setcc(m_regs[idx]);
     }
+// end::ldi[]
 
+// tag::ldr[]
     template<>
     void cpu::perform<opcode::LDR>(std::uint16_t bin) {
         auto [a, b, offset] = decode<DR, BaseR, offset6>(bin);
         m_regs[a] = m_memory[m_regs[b] + sign_extend<offset6>(offset)];
         setcc(m_regs[a]);
     }
+// end::ldr[]
 
+// tag::lea[]
     template<>
     void cpu::perform<opcode::LEA>(std::uint16_t bin) {
         auto [idx, offset] = decode<DR, PCoffset9>(bin);
         m_regs[idx] = m_pc + sign_extend<PCoffset9>(offset);
         setcc(m_regs[idx]);
     }
+// end::lea[]
 
+// tag::not[]
     template<>
     void cpu::perform<opcode::NOT>(std::uint16_t bin) {
         auto [a, b] = decode<DR, SR1>(bin);
         m_regs[a] = ~m_regs[b];
         setcc(m_regs[a]);
     }
+// end::not[]
 
     template<>
     void cpu::perform<opcode::RTI>([[maybe_unused]] std::uint16_t bin) {
-        // TODO
+        // this operation is not implemented since it requires the 
+        // system call routines to be stored in memory, which is 
+        // not the case.
+        throw std::logic_error{"ERROR: the RTI operation is not implemented"};
     }
 
+// tag::st[]
     template<>
     void cpu::perform<opcode::ST>(std::uint16_t bin) {
         auto [reg, offset] = decode<SR, PCoffset9>(bin);
         auto address = m_pc + sign_extend<PCoffset9>(offset);
         m_memory[address] = m_regs[reg];
     }
+// end::st[]
 
 // tag::sti[]
     template<>
@@ -149,12 +162,15 @@ namespace lc3 {
     }
 // end::sti[]
 
+// tag::str[]
     template<>
     void cpu::perform<opcode::STR>(std::uint16_t bin) {
         auto [a, b, offset] = decode<SR, BaseR, offset6>(bin);
         m_memory[m_regs[b] + sign_extend<offset6>(offset)] = m_regs[a];
     }
+// end::str[]
 
+// tag::trap[]
     template<>
     void cpu::perform<opcode::TRAP>(std::uint16_t bin) {
         auto [offset] = decode<trapvect8>(bin);
@@ -191,6 +207,7 @@ namespace lc3 {
         }
 
     }
+// end::trap[]
 
     void cpu::execute(std::uint16_t bin) {
         auto op = static_cast<opcode>(bin >> 12);

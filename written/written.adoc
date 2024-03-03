@@ -17,12 +17,14 @@ The LC-3 has a simple yet versatile instruction set.
 Many programs for this architecture can be found online, which is great for testing the VM.
 Besides programs, on the internet, tools for this architecture can be found, including an assembler and a C compiler.
 
+In this document I won't explain the syntax of the LC-3 assembly language.
+
 == Registers
 
 Registers are a type of computer memory that typically is build into the CPU.
 This type of memory is usually faster to access for a CPU than RAM.
 The LC-3 has eight 16-bit general purpose registers, these are called `R0-R7`.
-These registers can be used as operands for instructions.
+These registers are used by for instructions to hold operands or store results.
 Besides these general purpose registers, there's also a 16-bit program counter which is ofter referred to as `PC` and three conditional codes (which I will cover later).
 
 <<<
@@ -181,11 +183,10 @@ include::../src/cpu.cpp[tag=add]
 }
 ----
 
-=== Bitwise AND
+=== Bit-wise Logical AND
 
-The bitwise AND operation is almost identical to addition operation except for that instead of the `+` operator, the `&` operator should be used.
+The bit-wise AND operation is almost identical to addition operation except for that instead of the `+` operator, the `&` operator should be used.
 For this reason I won't show the listing of the bitwise AND operation.
-
 
 === Conditional Branch
 
@@ -215,7 +216,8 @@ include::../src/cpu.cpp[tag=jmp]
 
 This operation is similar to `JMP` but works a bit differently.
 First, the current program counter gets copied into `R7`.
-Then if the 11^th^ bit of the encoded instruction is set, a jump operation will be performed, else an 11-bit offset will be added to the program counter.
+Then if the 11^th^ bit of the encoded instruction is set, a jump operation will be performed, else an offset will be added to the program counter.
+The reason the program counter gets copied into `R7` is so that after the procedure is done, it can return to the address it got called from.
 
 [source, cpp]
 ----
@@ -226,10 +228,91 @@ include::../src/cpu.cpp[tag=jsr]
 
 === Load
 
+Operations such as `ADD` and `AND` only take registers or immediate values as source operands.
+Sometimes, however, we need to perform these operations on values stored in memory.
+The `LC-3` provides various operations for loading values from memory into registers.
+Once the value is into a register we can use it for the desired operation.
+`LD` is the first of these operation I'm going to cover.
+The encoding consists of a source register and a 9-bit offset that is relative to the program counter.
+The value stored at this offset in memory is what gets copied into the destination register.
+
 [source, cpp]
 ----
 namespace lc3 {
 include::../src/cpu.cpp[tag=ld]
+}
+----
+
+=== Load Indirect
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=ldi]
+}
+----
+
+=== Load Base+offset
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=ldr]
+}
+----
+
+=== Load Effective Address
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=lea]
+}
+----
+
+
+=== Bit-Wise Complement
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=not]
+}
+----
+
+=== Store
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=st]
+}
+----
+
+=== Store Indirect
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=sti]
+}
+----
+
+=== Store Base+offset
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=str]
+}
+----
+
+=== System Call
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=trap]
 }
 ----
 
