@@ -6,7 +6,7 @@ Jochem Arends
 
 == Introduction
 
-Virtual Machine (VM) are programs that emulates computer hardware. 
+Virtual Machine (VM) are programs that emulates computer hardware.
 Virtual machines make it possible to run programs that aren't written for your device.
 In this document I'm going to explain how I wrote a virtual machine using {cpp}.
 
@@ -14,10 +14,10 @@ In this document I'm going to explain how I wrote a virtual machine using {cpp}.
 
 Little Computer 3 (LC-3) is an educational computer architecuture developed at the University of Texas at Austin.
 The LC-3 has a simple yet versatile instruction set. 
-Many programs for this architecture can be found online, which is great for testing the VM.
+Many programs for this architecture can be found online, which is great for testing the virtual machine.
 Besides programs, on the internet, tools for this architecture can be found, including an assembler and a C compiler.
 
-In this document I won't explain the syntax of the LC-3 assembly language.
+In this document I won't explain the syntax of the LC-3 assembly language but rather explain how I've implemented the virtual machine and explain.
 
 == Registers
 
@@ -308,6 +308,8 @@ include::../src/cpu.cpp[tag=str]
 ----
 
 === System Call
+
+
 
 [source, cpp]
 ----
