@@ -6,7 +6,7 @@
 int main() {
     lc3::cpu cpu{};
 
-    std::ifstream ifs{"./greet", std::ios::binary};
+    std::ifstream ifs{"../reverse-string.o", std::ios::binary};
 
     auto read = [&ifs]() {
         lc3::word word{};

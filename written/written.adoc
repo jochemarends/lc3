@@ -1,5 +1,6 @@
 = Virtual Machines
 :source-highlighter: pygments
+:hide-uri-scheme:
 
 [.text-center]
 Jochem Arends
@@ -360,10 +361,18 @@ include::../src/cpu.cpp[tag=trap]
 
 === Testing the VM
 
-http://lc3tutor.org/
+From http://lc3tutor.org I've taken an example program, assembled it, and downloaded it as object file.
+The program reverses the contents of a hard coded string and prints it to the terminal.
+
+The structure of the object file is very simple.
+The first word contains the address where the program should be loaded, the rest is just the assembled program.
+When reading the words, the order of the bytes should get swapped, because the object file uses little-endian.
 
 [source, cpp]
 ----
 include::../src/main.cpp[]
 ----
+
+When executing this program the output is `fedcba` since the hard coded string was `abcdef`.
+http://lc3tutor.org offers some more example programs or you could write your own ones.
 
