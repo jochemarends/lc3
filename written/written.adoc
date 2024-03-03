@@ -9,6 +9,7 @@ Jochem Arends
 
 Virtual Machine (VM) are programs that emulates computer hardware.
 Virtual machines make it possible to run programs that aren't written for your device.
+Virtual machines don't directly run on the hardware they emulate but are rather applications run by an operating system.
 In this document I'm going to explain how I wrote a virtual machine using {cpp}.
 
 == Little Computer 3
@@ -20,6 +21,9 @@ Besides programs, on the internet, tools for this architecture can be found, inc
 
 In this document I won't explain the syntax of the LC-3 assembly language or how to write programs for this architecture. 
 Rather I will explain how I've implemented the virtual machine, how the instruction are encoded, and what each instruction does.
+
+Througout this document I will often refer to the LC-3 ISA.
+This is a document that describes the architecture of the LC-3 and can be found at https://www.jmeiners.com/lc3-vm/supplies/lc3-isa.pdf.
 
 == General Purpose Registers
 
@@ -54,10 +58,8 @@ The LC-3 architecture knows 15 distinct operations, which are listed below in th
 include::../inc/lc3/opcodes.h[tag=adoc]
 ----
 
-== Instruction Decoding
-
-Instructions consist of named bit sequences that occupy fixed sequence of bits. 
-When looking at the instruction encodings (ISA page number 525) I found that many of them follow a similar pattern.
+Instructions consist of opcodes and operands.
+When looking at the instruction encodings (ISA page number 525) I found that the encoding of many operand types follow a similar pattern.
 For example, instruction that use a desination register, always encode the register index for this operand at bits 11 till 9.
 When looking at any other types, the same pattern can be found.
 All the types are listed below together with the bits they occupy in encodings.
@@ -111,6 +113,8 @@ include::../inc/lc3/types.h[tag=adoc]
 
 #endif
 ----
+
+== Instruction Decoding
 
 Now that we've defined which bits each type occupies, we can make functions to extract the bits of these types.
 `lc3::extract` extracts a single type from 16-bit data.
@@ -197,6 +201,7 @@ include::../src/cpu.cpp[tag=setcc]
 
 Whats left are the private data members.
 There is a program counter (`m_pc`), eight general purpose registers (`m_regs`), a boolean value that indicates whether the CPU is halted (`m_halted`), and the conditional codes (`m_condition`).
+The program counter starts at address `0x3000` since that is where the memory section available for user program starts and most example programs found online expect the `PC` to start there.
 
 === Operations
 
