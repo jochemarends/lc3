@@ -11,16 +11,18 @@
 #include <stdexcept>
 
 namespace lc3 {
+// tag::run[]
     void cpu::run() {
         while (!m_halted) {
-            std::uint16_t var = m_memory[m_pc++];
-            execute(var);
+            execute(m_memory[m_pc++]);
         }
+        m_halted = false;
     }
+// end::run[]
 
 // tag::add[]
     template<>
-    void cpu::perform<opcode::ADD>(std::uint16_t bin) {
+    void cpu::perform<opcode::ADD>(word bin) {
         if (bit_at<5>(bin) == 0) {
             auto [a, b, c] = decode<DR, SR1, SR2>(bin);
             m_regs[a] = m_regs[b] + m_regs[c];
@@ -50,7 +52,7 @@ namespace lc3 {
 
 // tag::br[]
     template<>
-    void cpu::perform<opcode::BR>(std::uint16_t bin) {
+    void cpu::perform<opcode::BR>(word bin) {
         auto [offset] = decode<PCoffset9>(bin);
 
         if (bit_at<11>(bin) && m_condition.n) {
@@ -77,7 +79,7 @@ namespace lc3 {
 
 // tag::jsr[]
     template<>
-    void cpu::perform<opcode::JSR>(std::uint16_t bin) {
+    void cpu::perform<opcode::JSR>(word bin) {
         m_regs[7] = m_pc;
 
         if (bit_at<11>(bin) == 0) {
@@ -93,7 +95,7 @@ namespace lc3 {
 
 // tag::ld[]
     template<>
-    void cpu::perform<opcode::LD>(std::uint16_t bin) {
+    void cpu::perform<opcode::LD>(word bin) {
         auto [idx, offset] = decode<DR, PCoffset9>(bin);
         m_regs[idx] = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
         setcc(m_regs[idx]);
@@ -102,7 +104,7 @@ namespace lc3 {
 
 // tag::ldi[]
     template<>
-    void cpu::perform<opcode::LDI>(std::uint16_t bin) {
+    void cpu::perform<opcode::LDI>(word bin) {
         auto [idx, offset] = decode<DR, PCoffset9>(bin);
         m_regs[idx] = m_memory[m_memory[m_pc + sign_extend<PCoffset9>(offset)]];
         setcc(m_regs[idx]);
@@ -111,7 +113,7 @@ namespace lc3 {
 
 // tag::ldr[]
     template<>
-    void cpu::perform<opcode::LDR>(std::uint16_t bin) {
+    void cpu::perform<opcode::LDR>(word bin) {
         auto [a, b, offset] = decode<DR, BaseR, offset6>(bin);
         m_regs[a] = m_memory[m_regs[b] + sign_extend<offset6>(offset)];
         setcc(m_regs[a]);
@@ -120,7 +122,7 @@ namespace lc3 {
 
 // tag::lea[]
     template<>
-    void cpu::perform<opcode::LEA>(std::uint16_t bin) {
+    void cpu::perform<opcode::LEA>(word bin) {
         auto [idx, offset] = decode<DR, PCoffset9>(bin);
         m_regs[idx] = m_pc + sign_extend<PCoffset9>(offset);
         setcc(m_regs[idx]);
@@ -129,7 +131,7 @@ namespace lc3 {
 
 // tag::not[]
     template<>
-    void cpu::perform<opcode::NOT>(std::uint16_t bin) {
+    void cpu::perform<opcode::NOT>(word bin) {
         auto [a, b] = decode<DR, SR1>(bin);
         m_regs[a] = ~m_regs[b];
         setcc(m_regs[a]);
@@ -137,7 +139,7 @@ namespace lc3 {
 // end::not[]
 
     template<>
-    void cpu::perform<opcode::RTI>([[maybe_unused]] std::uint16_t bin) {
+    void cpu::perform<opcode::RTI>([[maybe_unused]] word bin) {
         // this operation is not implemented since it requires the 
         // system call routines to be stored in memory, which is 
         // not the case.
@@ -146,7 +148,7 @@ namespace lc3 {
 
 // tag::st[]
     template<>
-    void cpu::perform<opcode::ST>(std::uint16_t bin) {
+    void cpu::perform<opcode::ST>(word bin) {
         auto [reg, offset] = decode<SR, PCoffset9>(bin);
         auto address = m_pc + sign_extend<PCoffset9>(offset);
         m_memory[address] = m_regs[reg];
@@ -155,7 +157,7 @@ namespace lc3 {
 
 // tag::sti[]
     template<>
-    void cpu::perform<opcode::STI>(std::uint16_t bin) {
+    void cpu::perform<opcode::STI>(word bin) {
         auto [reg, offset] = decode<SR, PCoffset9>(bin);
         auto address = m_memory[m_pc + sign_extend<PCoffset9>(offset)];
         m_memory[address] = m_regs[reg];
@@ -164,7 +166,7 @@ namespace lc3 {
 
 // tag::str[]
     template<>
-    void cpu::perform<opcode::STR>(std::uint16_t bin) {
+    void cpu::perform<opcode::STR>(word bin) {
         auto [a, b, offset] = decode<SR, BaseR, offset6>(bin);
         m_memory[m_regs[b] + sign_extend<offset6>(offset)] = m_regs[a];
     }
@@ -172,7 +174,7 @@ namespace lc3 {
 
 // tag::trap[]
     template<>
-    void cpu::perform<opcode::TRAP>(std::uint16_t bin) {
+    void cpu::perform<opcode::TRAP>(word bin) {
         enum class vectors {
             GETC  = 0x20,
             OUT   = 0x21,
@@ -212,10 +214,15 @@ namespace lc3 {
         if (vector == HALT) {
             m_halted = true;
         }
+
+        if (vector == PUTSP) {
+            throw std::logic_error{"ERROR: PUTSP is not implemented"};
+        }
     }
 // end::trap[]
 
-    void cpu::execute(std::uint16_t bin) {
+// tag::execute[]
+    void cpu::execute(word bin) {
         auto op = static_cast<opcode>(bin >> 12);
 
         switch (op) {
@@ -228,6 +235,7 @@ namespace lc3 {
         case opcode::BR:
             perform<opcode::BR>(bin);
             break;
+// end::execute[]
         case opcode::JMP:
             perform<opcode::JMP>(bin);
             break;

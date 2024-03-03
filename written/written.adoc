@@ -30,7 +30,7 @@ The general purpose registers are used as operands for instructions or to store 
 
 == Program Counter
 
-Besides these general purpose registers, there's also a 16-bit program counter which is ofter referred to as `PC`.
+Besides these general purpose registers, there is a 16-bit program counter which is ofter referred to as `PC`.
 The program counter is basically a pointer that refers to the next instruction to be executed.
 When executing instructions the program the program counter automatically gets incremented but there are also instructions that explicitly set the program counter.
 
@@ -41,7 +41,7 @@ The three conditional codes are `N` (negative), `Z` (zero), and `P` (positive).
 Most instructions that modify the contents of a register set these codes according to the final value of that register.
 If the two's complement value of that register is less than zero, the `N` flag will get set.
 If the value is equal to zero, the `Z` flag gets set.
-Finally, if the final value is greater than zero, the `P` flag gets set.
+And if the final value is greater than zero, the `P` flag gets set.
 
 == Instruction Encoding
 
@@ -57,8 +57,8 @@ include::../inc/lc3/opcodes.h[tag=adoc]
 == Instruction Decoding
 
 Instructions consist of named bit sequences that occupy fixed sequence of bits. 
-When looking at the instruction encodings (ISA page number 525) I found that many of them follow similar patterns.
-For example, instruction that use a desination register, it always encode that register index at bits 11 till 9.
+When looking at the instruction encodings (ISA page number 525) I found that many of them follow a similar pattern.
+For example, instruction that use a desination register, always encode the register index for this operand at bits 11 till 9.
 When looking at any other types, the same pattern can be found.
 All the types are listed below together with the bits they occupy in encodings.
 
@@ -98,8 +98,9 @@ All the types are listed below together with the bits they occupy in encodings.
 |===
 
 A nice thing of this pattern is that every type can be represented using a width and an index (where `0` refers the the LSB).
-Below can be seen how these types can be represented in {cpp}.
-The `lc3::word` and `lc3::sword` aliases defined in this header but will only be used later by other parts of the program.
+Below I you can see how I've represented these types  in {cpp}.
+The `lc3::word` and `lc3::sword` are aliases defined in this header but will only used later by other parts of the program.
+A word in a computer is often an integer value that is the same size as registers, which in case of the LC-3 is 16-bits.
 
 .types.h
 [source, cpp]
@@ -135,6 +136,8 @@ This can come in handy when we want to implement memory mapped IO.
 include::../inc/lc3/memory.h[tag=!ignore]
 ----
 
+<<<
+
 == The CPU
 
 Below I've pasted the declaration of a structure that represents a LC-3 CPU.
@@ -155,6 +158,24 @@ By default the program gets loaded at address `0x0000` but an optional parameter
 The `lc3::cpu::execute` function accepts a single machine code instruction and executes it.
 The `lc3::cpu::run` function keeps executing machine code instructions starting at the current program counter and keeps doing this till the CPU gets halted (which will later be explained how to).
 
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=execute]
+            // etc...
+        }
+    }
+}
+----
+
+[source, cpp]
+----
+namespace lc3 {
+include::../src/cpu.cpp[tag=run]
+}
+----
+
+
 === The Implementation Details
 
 On second thought it does not make much sense to keep the memory inside the CPU since they're different units.
@@ -165,7 +186,7 @@ However, it is something I would take in consideration if writing a virtual mach
 `lc3::cpu::perform` member function takes an opcode as template parameter and an encoded instruction as regular parameter.
 For each opcode, I've defined a template specialization.
 
-`lc3::cpu::setcc` is a small member function used to set the conditional codes according to the state of its passed value.
+`lc3::cpu::setcc` is a small member function used to set the conditional codes according to the state of the value passed to it.
 
 [source, cpp]
 ----
@@ -181,7 +202,7 @@ There is a program counter (`m_pc`), eight general purpose registers (`m_regs`),
 
 In this section I will explain how I've implemented 15 operations.
 I'm going to roughly explain what each operation does and how I've implemented it.
-Again, for a more detailed description, consult the ISA.
+For a more detailed description, consult the ISA.
 The ISA contain pseudo code for the logic behind each instruction which was really helpful to me.
 
 === Addition
@@ -349,6 +370,28 @@ System calls provide a way for user programs to interact with the operating syst
 The `TRAP` operation (system call) can be used to call Trap Service Routines. 
 Normally these routines are located somewhere in memory but I've decided to hardcode them.
 The encoded instruction contains a trap vector (`trapvect8`) that indicates what type of system call needs to be performed.
+A detailed description about what each system call does can be found on page number 543 of the ISA.
+Below I've put a very brief description.
+
+[cols="1,1",stripes=even]
+|===
+|Name |Descriptoin
+
+|GETC 
+|Read a single character and store it in R0.
+
+|OUT
+|Write a single character from R0 to the console.
+
+|PUTS
+|Write a null-terminated string to the console.
+
+|IN
+|Prompt the user for a character and the same as GETC.
+
+|HALT
+|Halts the CPU.
+|===
 
 [source, cpp]
 ----
@@ -373,6 +416,7 @@ When reading the words, the order of the bytes should get swapped, because the o
 include::../src/main.cpp[]
 ----
 
-When executing this program the output is `fedcba` since the hard coded string was `abcdef`.
-http://lc3tutor.org offers some more example programs or you could write your own ones.
+When executing this program the output is `fedcba`. 
+This is correct because the hard coded string was `abcdef`.
+http://lc3tutor.org offers more example programs that can be tried or you can write your own.
 
